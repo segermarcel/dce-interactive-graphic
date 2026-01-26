@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Charging Attributes - Interactive Graphic</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .graphic-container {
+            position: relative;
+            width: 100%;
+            max-width: 568px;
+        }
+
+        /* The SVG wrapper */
+        .svg-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .svg-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Invisible clickable overlays */
+        .click-area {
+            position: absolute;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background-color 0.2s ease;
+        }
+
+        .click-area:hover {
+            background-color: rgba(91, 155, 213, 0.15);
+        }
+
+        /* Tooltip styling */
+        .tooltip {
+            position: absolute;
+            background: #ffffff;
+            border: 2px solid #5b9bd5;
+            border-radius: 8px;
+            padding: 12px 16px;
+            max-width: 300px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .tooltip.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip-close {
+            cursor: pointer;
+            font-size: 18px;
+            color: #999;
+            line-height: 1;
+            float: right;
+            margin-left: 8px;
+        }
+
+        .tooltip-close:hover {
+            color: #333;
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ffffff;
+            border-left: 2px solid #5b9bd5;
+            border-bottom: 2px solid #5b9bd5;
+        }
+
+        /* Arrow positioning variants */
+        .tooltip.arrow-right::before {
+            right: -8px;
+            top: 20px;
+            transform: rotate(-135deg);
+        }
+
+        .tooltip.arrow-left::before {
+            left: -8px;
+            top: 20px;
+            transform: rotate(45deg);
+        }
+
+        .tooltip.arrow-top::before {
+            top: -8px;
+            left: 50%;
+            margin-left: -6px;
+            transform: rotate(135deg);
+        }
+
+        .tooltip.arrow-bottom::before {
+            bottom: -8px;
+            left: 50%;
+            margin-left: -6px;
+            transform: rotate(-45deg);
+        }
+
+        /* Overlay for clicking outside to close */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Instruction text */
+        .instruction {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="graphic-container">
+        <p class="instruction">Click on any attribute box for more information</p>
+
+        <div class="svg-wrapper">
+            <!-- Embed the SVG file -->
+            <img src="Attribute-level-explanation-graphic-NEW.svg" alt="EV Charging Attributes Graphic">
+
+            <!-- Clickable overlay areas positioned over each attribute box -->
+            <!-- Coordinates calculated from SVG viewBox 568x394 -->
+
+            <!-- 1. Price (left upper): x=0.5, y=95.5, w=157, h=39 -->
+            <div class="click-area" data-tooltip="price" style="left: 0%; top: 24.2%; width: 27.6%; height: 9.9%;"></div>
+
+            <!-- 2. CO2 savings (left lower): x=0.5, y=208.5, w=157, h=39 -->
+            <div class="click-area" data-tooltip="co2" style="left: 0%; top: 52.9%; width: 27.6%; height: 9.9%;"></div>
+
+            <!-- 3. Energy export / Bidirectional charging (top): x=307.5, y=0.5, w=163, h=39 -->
+            <div class="click-area" data-tooltip="export" style="left: 54.1%; top: 0%; width: 28.7%; height: 9.9%;"></div>
+
+            <!-- 4. Compensation (right upper): x=338.5, y=55.5, w=181, h=39 -->
+            <div class="click-area" data-tooltip="compensation" style="left: 59.6%; top: 14.1%; width: 31.9%; height: 9.9%;"></div>
+
+            <!-- 5. Override fee (bottom left): x=191.5, y=354.5, w=156, h=39 -->
+            <div class="click-area" data-tooltip="override" style="left: 33.7%; top: 90%; width: 27.5%; height: 9.9%;"></div>
+
+            <!-- 6. Guaranteed range (bottom right): x=386.5, y=354.5, w=181, h=39 -->
+            <div class="click-area" data-tooltip="range" style="left: 68%; top: 90%; width: 31.9%; height: 9.9%;"></div>
+        </div>
+
+        <!-- Tooltips -->
+        <!-- Price (left upper) - tooltip appears to the right, arrow points left -->
+        <div id="tooltip-price" class="tooltip arrow-left">
+            <span class="tooltip-close">&times;</span>
+            What you pay to charge your EV.
+        </div>
+
+        <!-- CO2 savings (left lower) - tooltip appears to the right, arrow points left -->
+        <div id="tooltip-co2" class="tooltip arrow-left">
+            <span class="tooltip-close">&times;</span>
+            Estimated carbon emissions avoided from smart charging at cleaner times.
+        </div>
+
+        <!-- Energy export (top center) - tooltip appears below, arrow points up -->
+        <div id="tooltip-export" class="tooltip arrow-top">
+            <span class="tooltip-close">&times;</span>
+            Your EV may send some stored energy back to the workplace or energy network. Your guaranteed range is always protected unless you override.
+        </div>
+
+        <!-- Compensation (right upper) - tooltip appears to the left, arrow points right -->
+        <div id="tooltip-compensation" class="tooltip arrow-right">
+            <span class="tooltip-close">&times;</span>
+            What you get paid for energy your EV exports.
+        </div>
+
+        <!-- Override fee (bottom left) - tooltip appears above, arrow points down -->
+        <div id="tooltip-override" class="tooltip arrow-bottom">
+            <span class="tooltip-close">&times;</span>
+            A per-day fee if you break the commitment (e.g., leave early). Your guaranteed range may not be met that day.
+        </div>
+
+        <!-- Guaranteed range (bottom right) - tooltip appears above, arrow points down -->
+        <div id="tooltip-range" class="tooltip arrow-bottom">
+            <span class="tooltip-close">&times;</span>
+            The minimum driving range your EV will have by your usual departure time.
+        </div>
+
+        <div class="overlay" id="overlay"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.graphic-container');
+            const overlay = document.getElementById('overlay');
+            const clickAreas = document.querySelectorAll('.click-area');
+            const tooltips = document.querySelectorAll('.tooltip');
+
+            // Position configurations for each tooltip
+            // Aligned to point at respective boxes
+            const tooltipPositions = {
+                'price': { left: '29%', top: '24%' },           // Right of left-upper box
+                'co2': { left: '29%', top: '53%' },             // Right of left-lower box
+                'export': { left: '50%', top: '18%' },          // Below top-center box (moved down)
+                'compensation': { right: '42%', top: '18%' },   // Left of right-upper box
+                'override': { left: '33%', bottom: '12%' },     // Above bottom-left box
+                'range': { left: '60%', bottom: '12%' }         // Above bottom-right box
+            };
+
+            function closeAllTooltips() {
+                tooltips.forEach(t => t.classList.remove('active'));
+                overlay.classList.remove('active');
+            }
+
+            function showTooltip(tooltipId) {
+                closeAllTooltips();
+                const tooltip = document.getElementById('tooltip-' + tooltipId);
+                const pos = tooltipPositions[tooltipId];
+
+                // Reset positioning
+                tooltip.style.left = '';
+                tooltip.style.right = '';
+                tooltip.style.top = '';
+                tooltip.style.bottom = '';
+
+                // Apply positioning
+                if (pos.left) tooltip.style.left = pos.left;
+                if (pos.right) tooltip.style.right = pos.right;
+                if (pos.top) tooltip.style.top = pos.top;
+                if (pos.bottom) tooltip.style.bottom = pos.bottom;
+
+                tooltip.classList.add('active');
+                overlay.classList.add('active');
+            }
+
+            // Add click handlers to click areas
+            clickAreas.forEach(area => {
+                area.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const tooltipId = this.getAttribute('data-tooltip');
+                    showTooltip(tooltipId);
+                });
+            });
+
+            // Close on overlay click
+            overlay.addEventListener('click', closeAllTooltips);
+
+            // Close on X button click
+            document.querySelectorAll('.tooltip-close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeAllTooltips();
+                });
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAllTooltips();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
