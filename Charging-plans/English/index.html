@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charging Plans - Interactive Graphic</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .graphic-container {
+            position: relative;
+            width: 100%;
+            max-width: 411px;
+        }
+
+        /* The SVG wrapper */
+        .svg-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .svg-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Invisible clickable overlays */
+        .click-area {
+            position: absolute;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .click-area:hover {
+            background-color: rgba(91, 155, 213, 0.15);
+        }
+
+        /* Tooltip styling */
+        .tooltip {
+            position: absolute;
+            background: #ffffff;
+            border: 2px solid #5b9bd5;
+            border-radius: 8px;
+            padding: 12px 16px;
+            max-width: 380px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .tooltip.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip-close {
+            cursor: pointer;
+            font-size: 18px;
+            color: #999;
+            line-height: 1;
+            float: right;
+            margin-left: 8px;
+        }
+
+        .tooltip-close:hover {
+            color: #333;
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ffffff;
+            border-left: 2px solid #5b9bd5;
+            border-bottom: 2px solid #5b9bd5;
+        }
+
+        /* Arrow positioning variants */
+        .tooltip.arrow-right::before {
+            right: -8px;
+            top: 20px;
+            transform: rotate(-135deg);
+        }
+
+        .tooltip.arrow-left::before {
+            left: -8px;
+            top: 20px;
+            transform: rotate(45deg);
+        }
+
+        .tooltip.arrow-top::before {
+            top: -8px;
+            left: 50%;
+            margin-left: -6px;
+            transform: rotate(135deg);
+        }
+
+        .tooltip.arrow-bottom::before {
+            bottom: -8px;
+            left: 50%;
+            margin-left: -6px;
+            transform: rotate(-45deg);
+        }
+
+        /* Overlay for clicking outside to close */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Instruction text */
+        .instruction {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="graphic-container">
+        <p class="instruction">Click on any charging plan for more information</p>
+
+        <div class="svg-wrapper">
+            <!-- Embed the SVG file -->
+            <img src="charging-plans-graphic.svg" alt="Charging Plans Graphic">
+
+            <!-- Clickable overlay areas positioned over each label box -->
+            <!-- Coordinates calculated from SVG viewBox 411x299 -->
+
+            <!-- 1. Uncontrolled charging label: x=0.5, y=1.5, w=230, h=29 -->
+            <!-- Percentages: left=0.1%, top=0.5%, width=56%, height=9.7% -->
+            <div class="click-area" data-tooltip="uncontrolled" style="left: 0.1%; top: 0.5%; width: 56%; height: 9.7%;"></div>
+
+            <!-- 2. Smart charging label: x=1.5, y=93.5, w=230, h=29 -->
+            <!-- Percentages: left=0.4%, top=31.3%, width=56%, height=9.7% -->
+            <div class="click-area" data-tooltip="smart" style="left: 0.4%; top: 31.3%; width: 56%; height: 9.7%;"></div>
+
+            <!-- 3. Bidirectional charging label: x=1.5, y=189.5, w=230, h=29 -->
+            <!-- Percentages: left=0.4%, top=63.4%, width=56%, height=9.7% -->
+            <div class="click-area" data-tooltip="bidirectional" style="left: 0.4%; top: 63.4%; width: 56%; height: 9.7%;"></div>
+        </div>
+
+        <!-- Tooltips -->
+        <!-- Uncontrolled charging - tooltip appears below, arrow points up -->
+        <div id="tooltip-uncontrolled" class="tooltip arrow-top">
+            <span class="tooltip-close">&times;</span>
+            Charging starts as soon as you plug in and continues until you leave or the battery is (nearly) full.
+        </div>
+
+        <!-- Smart charging - tooltip appears below, arrow points up -->
+        <div id="tooltip-smart" class="tooltip arrow-top">
+            <span class="tooltip-close">&times;</span>
+            Charging is scheduled for periods of lower prices or higher renewable electricity. The system guarantees charging to a minimum range - sufficiently large to cover at least your commute - by your usual departure time.
+        </div>
+
+        <!-- Bidirectional charging - tooltip appears below, arrow points up -->
+        <div id="tooltip-bidirectional" class="tooltip arrow-top">
+            <span class="tooltip-close">&times;</span>
+            Same as smart charging, with the additional possibility of allowing your EV to send a small amount of energy back to the workplace or energy network in exchange for a compensation. Never below your guaranteed range.
+        </div>
+
+        <div class="overlay" id="overlay"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.graphic-container');
+            const overlay = document.getElementById('overlay');
+            const clickAreas = document.querySelectorAll('.click-area');
+            const tooltips = document.querySelectorAll('.tooltip');
+
+            // Position configurations for each tooltip
+            // Aligned below respective label boxes, arrow touches bottom of label box
+            const tooltipPositions = {
+                'uncontrolled': { left: '5%', top: '19%' },       // Below top label box
+                'smart': { left: '5%', top: '47%' },              // Below middle label box
+                'bidirectional': { left: '5%', top: '76%' }       // Below bottom label box
+            };
+
+            function closeAllTooltips() {
+                tooltips.forEach(t => t.classList.remove('active'));
+                overlay.classList.remove('active');
+            }
+
+            function showTooltip(tooltipId) {
+                closeAllTooltips();
+                const tooltip = document.getElementById('tooltip-' + tooltipId);
+                const pos = tooltipPositions[tooltipId];
+
+                // Reset positioning
+                tooltip.style.left = '';
+                tooltip.style.right = '';
+                tooltip.style.top = '';
+                tooltip.style.bottom = '';
+
+                // Apply positioning
+                if (pos.left) tooltip.style.left = pos.left;
+                if (pos.right) tooltip.style.right = pos.right;
+                if (pos.top) tooltip.style.top = pos.top;
+                if (pos.bottom) tooltip.style.bottom = pos.bottom;
+
+                tooltip.classList.add('active');
+                overlay.classList.add('active');
+            }
+
+            // Add click handlers to click areas
+            clickAreas.forEach(area => {
+                area.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const tooltipId = this.getAttribute('data-tooltip');
+                    showTooltip(tooltipId);
+                });
+            });
+
+            // Close on overlay click
+            overlay.addEventListener('click', closeAllTooltips);
+
+            // Close on X button click
+            document.querySelectorAll('.tooltip-close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeAllTooltips();
+                });
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAllTooltips();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
